@@ -5,6 +5,7 @@ import {
   View,
   ScrollView
 } from 'react-native';
+import PropTypes from 'prop-types';
 
 import shallowequal from 'shallowequal';
 import md5 from 'md5';
@@ -176,10 +177,10 @@ MessageContainer.defaultProps = {
 };
 
 MessageContainer.propTypes = {
-  messages: React.PropTypes.array,
-  user: React.PropTypes.object,
-  renderFooter: React.PropTypes.func,
-  renderMessage: React.PropTypes.func,
-  onLoadEarlier: React.PropTypes.func,
-  listViewProps: React.PropTypes.object,
+  messages: PropTypes.array,
+  user: PropTypes.object,
+  renderFooter: PropTypes.func,
+  renderMessage: PropTypes.func,
+  onLoadEarlier: PropTypes.func,
+  listViewProps: PropTypes.object,
 };
