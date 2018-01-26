@@ -3,8 +3,7 @@ import {
   Animated,
   StyleSheet,
   View,
-  Text,
-  TouchableOpacity
+  TextInput,
 } from 'react-native';
 import PropTypes from 'prop-types';
 
@@ -27,7 +26,7 @@ import MessageContainer from './MessageContainer';
 import Send from './Send';
 import Time from './Time';
 import GiftedAvatar from './GiftedAvatar';
-import GiftedChatInteractionManager from './GiftedChatInteractionManager';
+// import GiftedChatInteractionManager from './GiftedChatInteractionManager';
 
 // Min and max heights of ToolbarInput and Composer
 // Needed for Composer auto grow and ScrollView animation
@@ -35,23 +34,49 @@ import GiftedChatInteractionManager from './GiftedChatInteractionManager';
 const MIN_COMPOSER_HEIGHT = 50;
 const MAX_COMPOSER_HEIGHT = 50;
 
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    height: '100%',
+  },
+  messageFlex: {
+    display: 'flex',
+  },
+});
+
 class GiftedChat extends React.Component {
+  static append(currentMessages = [], messages) {
+    let appMessages = messages;
+
+    if (!Array.isArray(messages)) {
+      appMessages = [messages];
+    }
+    return appMessages.concat(currentMessages);
+  }
+
+  static prepend(currentMessages = [], messages) {
+    let prepMessages = messages;
+
+    if (!Array.isArray(messages)) {
+      prepMessages = [messages];
+    }
+    return currentMessages.concat(prepMessages);
+  }
+
   constructor(props) {
     super(props);
-
-    // default values
-    this._isMounted = false;
-    this._bottomOffset = 0;
-    this._maxHeight = null;
-    this._isFirstLayout = true;
-    this._locale = 'en';
-    this._messages = [];
 
     this.state = {
       isInitialized: false, // initialization will calculate maxHeight before rendering the chat
       composerHeight: MIN_COMPOSER_HEIGHT,
       messagesContainerHeight: null,
-      typingDisabled: false
+      typingDisabled: false,
+      isMounted: false,
+      bottomOffset: 0,
+      maxHeight: null,
+      isFirstLayout: true,
+      locale: 'en',
+      messages: [],
     };
 
     this.onSend = this.onSend.bind(this);
@@ -66,20 +91,6 @@ class GiftedChat extends React.Component {
     };
   }
 
-  static append(currentMessages = [], messages) {
-    if (!Array.isArray(messages)) {
-      messages = [messages];
-    }
-    return messages.concat(currentMessages);
-  }
-
-  static prepend(currentMessages = [], messages) {
-    if (!Array.isArray(messages)) {
-      messages = [messages];
-    }
-    return currentMessages.concat(messages);
-  }
-
   getChildContext() {
     return {
       getLocale: this.getLocale,
@@ -87,164 +98,149 @@ class GiftedChat extends React.Component {
   }
 
   componentWillMount() {
-    this.setIsMounted(true);
+    this.setState({ isMounted: true });
     this.initLocale();
     this.initMessages(this.props.messages);
-  }
-
-  componentWillUnmount() {
-    this.setIsMounted(false);
   }
 
   componentWillReceiveProps(nextProps = {}) {
     this.initMessages(nextProps.messages);
   }
 
-  initLocale() {
-    if (this.props.locale === null || moment.locales().indexOf(this.props.locale) === -1) {
-      this.setLocale('en');
-    } else {
-      this.setLocale(this.props.locale);
+  componentWillUnmount() {
+    this.setState({ isMounted: false });
+  }
+
+  onSend(messages = [], shouldResetInputToolbar = false) {
+    const { user, messageIdGenerator, onSend } = this.props;
+    const { isMounted } = this.state;
+
+    let newMessages = messages;
+
+    if (!Array.isArray(messages)) {
+      newMessages = [messages];
+    }
+
+    newMessages = newMessages.map((message) => {
+      return {
+        ...message,
+        user,
+        createdAt: new Date(),
+        _id: messageIdGenerator(),
+      };
+    });
+
+    if (shouldResetInputToolbar === true) {
+      this.setState({ typingDisabled: true });
+      this.resetInputToolbar();
+    }
+
+    onSend(newMessages);
+    this.scrollToBottom();
+
+    if (shouldResetInputToolbar === true) {
+      setTimeout(() => {
+        if (isMounted === true) {
+          this.setState({ typingDisabled: false });
+        }
+      }, 100);
     }
   }
 
-  initMessages(messages = []) {
-    this.setMessages(messages);
-  }
+  onInputSizeChanged(size) {
+    const newComposerHeight = Math.max(MIN_COMPOSER_HEIGHT, Math.min(MAX_COMPOSER_HEIGHT, size.height));
+    const newMessagesContainerHeight = this.getMessagesContainerHeight(newComposerHeight);
 
-  setLocale(locale) {
-    this._locale = locale;
-  }
-
-  getLocale() {
-    return this._locale;
-  }
-
-  setMessages(messages) {
-    this._messages = messages;
-  }
-
-  getMessages() {
-    return this._messages;
-  }
-
-  setMaxHeight(height) {
-    this._maxHeight = height;
-  }
-
-  getMaxHeight() {
-    return this._maxHeight;
-  }
-
-  setBottomOffset(value) {
-    this._bottomOffset = value;
-  }
-
-  getBottomOffset() {
-    return this._bottomOffset;
-  }
-
-  setIsFirstLayout(value) {
-    this._isFirstLayout = value;
-  }
-
-  getIsFirstLayout() {
-    return this._isFirstLayout;
-  }
-
-  setIsTypingDisabled(value) {
     this.setState({
-      typingDisabled: value
+      composerHeight: newComposerHeight,
+      messagesContainerHeight: this.prepareMessagesContainerHeight(newMessagesContainerHeight),
     });
   }
 
-  getIsTypingDisabled() {
-    return this.state.typingDisabled;
+  onInputTextChanged(text) {
+    const { typingDisabled } = this.state;
+    const { onInputTextChanged } = this.props;
+
+    if (typingDisabled) {
+      return;
+    }
+    if (onInputTextChanged) {
+      onInputTextChanged(text);
+    }
+    this.setState({ text });
   }
 
-  setIsMounted(value) {
-    this._isMounted = value;
+  onInitialLayoutViewLayout() {
+    this.setMaxHeight(200);
+
+    const newComposerHeight = MIN_COMPOSER_HEIGHT;
+    const newMessagesContainerHeight = this.getMessagesContainerHeight(newComposerHeight);
+
+    this.setState({
+      isInitialized: true,
+      text: '',
+      composerHeight: newComposerHeight,
+      messagesContainerHeight: this.prepareMessagesContainerHeight(newMessagesContainerHeight),
+    });
   }
 
-  getIsMounted() {
-    return this._isMounted;
+  onMainViewLayout(e) {
+    const { layout } = e.nativeEvent;
+    const { isFirstLayout, maxHeight } = this.state;
+
+    if (maxHeight !== layout.height || isFirstLayout === true) {
+      this.setState({
+        maxHeight: layout.height,
+        messagesContainerHeight: this.prepareMessagesContainerHeight(this.getMessagesContainerHeight()),
+      });
+    }
+
+    if (isFirstLayout === true) {
+      this.setState({ isFirstLayout: false });
+    }
   }
 
   /**
    * Returns the height, based on current window size
    */
-
   getMessagesContainerHeight(composerHeight) {
-    const { renderAccessory, minInputToolbarHeight } = this.props
+    const { renderAccessory, minInputToolbarHeight } = this.props;
+    const { maxHeight, bottomOffset } = this.state;
 
-    const minHeight = renderAccessory ? minInputToolbarHeight * 2 : minInputToolbarHeight
+    const minHeight = renderAccessory ? minInputToolbarHeight * 2 : minInputToolbarHeight;
     const inputHeight = composerHeight + (minHeight - MIN_COMPOSER_HEIGHT);
 
-    return this.getMaxHeight() - inputHeight + this.getBottomOffset();
+    return maxHeight - (inputHeight + bottomOffset);
   }
 
+  initLocale() {
+    const { locale } = this.props;
+
+    if (locale === null || moment.locales().indexOf(locale) === -1) {
+      this.setState({ locale: 'en' });
+    } else {
+      this.setState({ locale });
+    }
+  }
+
+  initMessages(messages = []) {
+    this.setState({ messages });
+  }
   prepareMessagesContainerHeight(value) {
-    if (this.props.isAnimated === true) {
+    const { isAnimated } = this.props;
+
+    if (isAnimated === true) {
       return new Animated.Value(value);
     }
     return value;
   }
 
   scrollToBottom(animated = true) {
-    if (this._messageContainerRef === null) {
-      return
-    }
-    this._messageContainerRef.scrollTo({
-      y: 0,
-      animated,
-    });
-  }
-
-  renderMessages() {
-    return (
-      <div style={{
-        height: this.state.messagesContainerHeight,
-        display: 'flex'
-      }}>
-        <MessageContainer
-          {...this.props}
-          invertibleScrollViewProps={this.invertibleScrollViewProps}
-          messages={this.getMessages()}
-          ref={component => this._messageContainerRef = component}
-        />
-        {this.renderChatFooter()}
-      </div>
-    );
-  }
-
-  onSend(messages = [], shouldResetInputToolbar = false) {
-    if (!Array.isArray(messages)) {
-      messages = [messages];
-    }
-
-    messages = messages.map((message) => {
-      return {
-        ...message,
-        user: this.props.user,
-        createdAt: new Date(),
-        _id: this.props.messageIdGenerator(),
-      };
-    });
-
-    if (shouldResetInputToolbar === true) {
-      this.setIsTypingDisabled(true);
-      this.resetInputToolbar();
-    }
-
-    this.props.onSend(messages);
-    this.scrollToBottom();
-
-    if (shouldResetInputToolbar === true) {
-      setTimeout(() => {
-        if (this.getIsMounted() === true) {
-          this.setIsTypingDisabled(false);
-        }
-      }, 100);
+    if (this.messageContainerRef !== null) {
+      this.messageContainerRef.scrollTo({
+        y: 0,
+        animated,
+      });
     }
   }
 
@@ -261,87 +257,49 @@ class GiftedChat extends React.Component {
     });
   }
 
-  onInputSizeChanged(size) {
-    
-    const newComposerHeight = Math.max(MIN_COMPOSER_HEIGHT, Math.min(MAX_COMPOSER_HEIGHT, size.height));
-    const newMessagesContainerHeight = this.getMessagesContainerHeight(newComposerHeight);
-    
-    this.setState({
-      composerHeight: newComposerHeight,
-      messagesContainerHeight: this.prepareMessagesContainerHeight(newMessagesContainerHeight),
-    });
+  renderMessages() {
+    const { messages, messagesContainerHeight } = this.state;
 
+    return (
+      <View style={[styles.messageFlex, { height: messagesContainerHeight }]}>
+        <MessageContainer
+          {...this.props}
+          invertibleScrollViewProps={this.invertibleScrollViewProps}
+          messages={messages}
+          ref={(component) => { this.messageContainerRef = component; }}
+        />
+        {this.renderChatFooter()}
+      </View>
+    );
   }
 
-  onInputTextChanged(text) {
-    if (this.getIsTypingDisabled()) {
-      return;
-    }
-    if (this.props.onInputTextChanged) {
-      this.props.onInputTextChanged(text);
-    }
-    this.setState({text});
-  }
-
-  onInitialLayoutViewLayout(e) {
-    const { layout } = e.nativeEvent;
-
-    this.setMaxHeight(1000);
-    
-    const newComposerHeight = MIN_COMPOSER_HEIGHT;
-    const newMessagesContainerHeight = this.getMessagesContainerHeight(newComposerHeight);
-    
-    this.setState({
-      isInitialized: true,
-      text: '',
-      composerHeight: newComposerHeight,
-      messagesContainerHeight: this.prepareMessagesContainerHeight(newMessagesContainerHeight),
-    });
-  }
-
-  onMainViewLayout(e) {
-    const { layout } = e.nativeEvent;
-
-    if (this.getMaxHeight() !== layout.height || this.getIsFirstLayout() === true) {
-      this.setMaxHeight(layout.height);
-      this.setState({
-        messagesContainerHeight: this.prepareMessagesContainerHeight(this.getMessagesContainerHeight()),
-      });
-    }
-
-    if (this.getIsFirstLayout() === true) {
-      this.setIsFirstLayout(false);
-    }
-  }
 
   renderInputToolbar() {
+    const { text, typingDisabled } = this.state;
 
-    const { text } = this.state
-    
     const {
       textInputProps,
-      maxInputLength,
-      renderInputToolbar
-    } = this.props
+      renderInputToolbar,
+    } = this.props;
 
     const inputToolbarProps = {
       ...this.props,
-      text: text,
+      text,
       onSend: this.onSend,
       onInputSizeChanged: this.onInputSizeChanged,
       onTextChanged: this.onInputTextChanged,
       textInputProps: {
         ...textInputProps,
-        ref: textInput => this.textInput = textInput,
-        maxLength: this.getIsTypingDisabled() ? 0 : maxInputLength
-      }
+        ref: (textInput) => { this.textInput = textInput; },
+        maxLength: typingDisabled ? 0 : textInputProps.maxInputLength,
+      },
     };
 
-    if (this.getIsTypingDisabled()) {
+    if (typingDisabled) {
       inputToolbarProps.textInputProps.maxLength = 0;
     }
 
-    if (this.props.renderInputToolbar) {
+    if (renderInputToolbar) {
       return renderInputToolbar(inputToolbarProps);
     }
 
@@ -353,8 +311,7 @@ class GiftedChat extends React.Component {
   }
 
   renderChatFooter() {
-
-    const { renderChatFooter } = this.props
+    const { renderChatFooter } = this.props;
 
     if (renderChatFooter) {
       const footerProps = {
@@ -366,8 +323,7 @@ class GiftedChat extends React.Component {
   }
 
   renderLoading() {
-
-    const { renderLoading } = this.props
+    const { renderLoading } = this.props;
 
     if (renderLoading) {
       return renderLoading();
@@ -377,8 +333,9 @@ class GiftedChat extends React.Component {
   }
 
   render() {
+    const { isInitialized } = this.state;
 
-    if (this.state.isInitialized === true) {
+    if (isInitialized === true) {
       return (
         <View style={styles.container} onLayout={this.onMainViewLayout}>
           {this.renderMessages()}
@@ -394,13 +351,6 @@ class GiftedChat extends React.Component {
     );
   }
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    height: '100%'
-  },
-});
 
 GiftedChat.childContextTypes = {
   getLocale: PropTypes.func,
@@ -438,40 +388,42 @@ GiftedChat.defaultProps = {
   minInputToolbarHeight: 44,
   isLoadingEarlier: false,
   messageIdGenerator: () => uuid.v4(),
-  maxInputLength: null
+  maxInputLength: null,
+  onInputTextChanged: null,
+  textInputProps: {},
 };
 
 GiftedChat.propTypes = {
-  messages: PropTypes.array,
+  messages: PropTypes.arrayOf(PropTypes.string),
   onSend: PropTypes.func,
   onInputTextChanged: PropTypes.func,
-  loadEarlier: PropTypes.bool,
-  onLoadEarlier: PropTypes.func,
+  textInputProps: TextInput.PropTypes,
+  // loadEarlier: PropTypes.bool,
+  // onLoadEarlier: PropTypes.func,
   locale: PropTypes.string,
   isAnimated: PropTypes.bool,
   renderAccessory: PropTypes.func,
-  renderActions: PropTypes.func,
-  renderAvatar: PropTypes.func,
-  renderBubble: PropTypes.func,
-  renderFooter: PropTypes.func,
+  // renderActions: PropTypes.func,
+  // renderAvatar: PropTypes.func,
+  // renderBubble: PropTypes.func,
+  // renderFooter: PropTypes.func,
   renderChatFooter: PropTypes.func,
-  renderMessageText: PropTypes.func,
-  renderMessageImage: PropTypes.func,
-  renderComposer: PropTypes.func,
-  renderCustomView: PropTypes.func,
-  renderDay: PropTypes.func,
+  // renderMessageText: PropTypes.func,
+  // renderMessageImage: PropTypes.func,
+  // renderComposer: PropTypes.func,
+  // renderCustomView: PropTypes.func,
+  // renderDay: PropTypes.func,
   renderInputToolbar: PropTypes.func,
-  renderLoadEarlier: PropTypes.func,
+  // renderLoadEarlier: PropTypes.func,
   renderLoading: PropTypes.func,
-  renderMessage: PropTypes.func,
-  renderSend: PropTypes.func,
-  renderTime: PropTypes.func,
+  // renderMessage: PropTypes.func,
+  // renderSend: PropTypes.func,
+  // renderTime: PropTypes.func,
   user: PropTypes.object,
-  bottomOffset: PropTypes.number,
+  // bottomOffset: PropTypes.number,
   minInputToolbarHeight: PropTypes.number,
-  isLoadingEarlier: PropTypes.bool,
+  // isLoadingEarlier: PropTypes.bool,
   messageIdGenerator: PropTypes.func,
-  keyboardShouldPersistTaps: PropTypes.oneOf(['always', 'never', 'handled']),
 };
 
 export {
@@ -490,5 +442,5 @@ export {
   Send,
   Time,
   GiftedAvatar,
-  utils
+  utils,
 };
