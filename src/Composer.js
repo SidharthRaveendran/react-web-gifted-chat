@@ -8,13 +8,18 @@ import PropTypes from 'prop-types';
 
 export default class Composer extends React.Component {
   onChange(e) {
-    const contentSize = e.nativeEvent.contentSize;
+    const { contentSize } = e.nativeEvent;
+
     if (!this.contentSize) {
+      
       this.contentSize = contentSize;
       this.props.onInputSizeChanged(this.contentSize);
+
     } else if (this.contentSize.width !== contentSize.width || this.contentSize.height !== contentSize.height) {
+      
       this.contentSize = contentSize;
       this.props.onInputSizeChanged(this.contentSize);
+      
     }
   }
 
