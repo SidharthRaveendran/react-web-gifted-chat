@@ -15,134 +15,6 @@ import Time from './Time';
 
 import { isSameUser, isSameDay, warnDeprecated } from './utils';
 
-export default class Bubble extends React.Component {
-  constructor(props) {
-    super(props);
-    this.onLongPress = this.onLongPress.bind(this);
-  }
-
-  handleBubbleToNext() {
-    if (isSameUser(this.props.currentMessage, this.props.nextMessage) && isSameDay(this.props.currentMessage, this.props.nextMessage)) {
-      return StyleSheet.flatten([styles[this.props.position].containerToNext, this.props.containerToNextStyle[this.props.position]]);
-    }
-    return null;
-  }
-
-  handleBubbleToPrevious() {
-    if (isSameUser(this.props.currentMessage, this.props.previousMessage) && isSameDay(this.props.currentMessage, this.props.previousMessage)) {
-      return StyleSheet.flatten([styles[this.props.position].containerToPrevious, this.props.containerToPreviousStyle[this.props.position]]);
-    }
-    return null;
-  }
-
-  renderMessageText() {
-    if (this.props.currentMessage.text) {
-      const {containerStyle, wrapperStyle, ...messageTextProps} = this.props;
-      if (this.props.renderMessageText) {
-        return this.props.renderMessageText(messageTextProps);
-      }
-      return <MessageText {...messageTextProps}/>;
-    }
-    return null;
-  }
-
-  renderMessageImage() {
-    if (this.props.currentMessage.image) {
-      const {containerStyle, wrapperStyle, ...messageImageProps} = this.props;
-      if (this.props.renderMessageImage) {
-        return this.props.renderMessageImage(messageImageProps);
-      }
-      return <MessageImage {...messageImageProps}/>;
-    }
-    return null;
-  }
-
-  renderTicks() {
-    const {currentMessage} = this.props;
-    if (this.props.renderTicks) {
-        return this.props.renderTicks(currentMessage);
-    }
-    if (currentMessage.user._id !== this.props.user._id) {
-        return;
-    }
-    if (currentMessage.sent || currentMessage.received) {
-      return (
-        <View style={styles.tickView}>
-          {currentMessage.sent && <Text style={[styles.tick, this.props.tickStyle]}>✓</Text>}
-          {currentMessage.received && <Text style={[styles.tick, this.props.tickStyle]}>✓</Text>}
-        </View>
-      )
-    }
-  }
-
-  renderTime() {
-    if (this.props.currentMessage.createdAt) {
-      const {containerStyle, wrapperStyle, ...timeProps} = this.props;
-      if (this.props.renderTime) {
-        return this.props.renderTime(timeProps);
-      }
-      return <Time {...timeProps}/>;
-    }
-    return null;
-  }
-
-  renderCustomView() {
-    if (this.props.renderCustomView) {
-      return this.props.renderCustomView(this.props);
-    }
-    return null;
-  }
-
-  onLongPress() {
-    if (this.props.onLongPress) {
-      this.props.onLongPress(this.context, this.props.currentMessage);
-    } else {
-      if (this.props.currentMessage.text) {
-        const options = [
-          'Copy Text',
-          'Cancel',
-        ];
-        const cancelButtonIndex = options.length - 1;
-        this.context.actionSheet().showActionSheetWithOptions({
-          options,
-          cancelButtonIndex,
-        },
-        (buttonIndex) => {
-          switch (buttonIndex) {
-            case 0:
-              Clipboard.setString(this.props.currentMessage.text);
-              break;
-          }
-        });
-      }
-    }
-  }
-
-  render() {
-    return (
-      <View style={[styles[this.props.position].container, this.props.containerStyle[this.props.position]]}>
-        <View style={[styles[this.props.position].wrapper, this.props.wrapperStyle[this.props.position], this.handleBubbleToNext(), this.handleBubbleToPrevious()]}>
-          <TouchableWithoutFeedback
-            onLongPress={this.onLongPress}
-            accessibilityTraits="text"
-            {...this.props.touchableProps}
-          >
-            <View>
-              {this.renderCustomView()}
-              {this.renderMessageImage()}
-              {this.renderMessageText()}
-              <View style={[styles.bottom, this.props.bottomContainerStyle[this.props.position]]}>
-                {this.renderTime()}
-                {this.renderTicks()}
-              </View>
-            </View>
-          </TouchableWithoutFeedback>
-        </View>
-      </View>
-    );
-  }
-}
-
 const styles = {
   left: StyleSheet.create({
     container: {
@@ -194,8 +66,177 @@ const styles = {
   tickView: {
     flexDirection: 'row',
     marginRight: 10,
-  }
+  },
 };
+
+export default class Bubble extends React.Component {
+  constructor(props) {
+    super(props);
+    this.onLongPress = this.onLongPress.bind(this);
+  }
+
+  onLongPress() {
+    const { onLongPress, currentMessage } = this.props;
+
+    if (onLongPress) {
+      onLongPress(this.context, currentMessage);
+    } else if (currentMessage.text) {
+      const options = [
+        'Copy Text',
+        'Cancel',
+      ];
+      const cancelButtonIndex = options.length - 1;
+
+      this.context.actionSheet().showActionSheetWithOptions({
+        options,
+        cancelButtonIndex,
+      },
+      (buttonIndex) => {
+        switch (buttonIndex) {
+          case 0:
+            Clipboard.setString(currentMessage.text);
+            break;
+          default:
+            break;
+        }
+      });
+    }
+  }
+
+  handleBubbleToNext() {
+    const {
+      currentMessage,
+      nextMessage,
+      position,
+      containerToNextStyle,
+    } = this.props;
+
+    if (isSameUser(currentMessage, nextMessage) && isSameDay(currentMessage, nextMessage)) {
+      return StyleSheet.flatten([styles[position].containerToNext, containerToNextStyle[position]]);
+    }
+    return null;
+  }
+
+  handleBubbleToPrevious() {
+    const {
+      currentMessage,
+      previousMessage,
+      position,
+      containerToPreviousStyle,
+    } = this.props;
+
+    if (isSameUser(currentMessage, previousMessage) && isSameDay(currentMessage, previousMessage)) {
+      return StyleSheet.flatten([styles[position].containerToPrevious, containerToPreviousStyle[position]]);
+    }
+    return null;
+  }
+
+  renderMessageText() {
+    const { containerStyle, wrapperStyle, ...messageTextProps } = this.props;
+    const { currentMessage, renderMessageText } = messageTextProps;
+
+    if (currentMessage.text) {
+      if (renderMessageText) {
+        return renderMessageText(messageTextProps);
+      }
+      return <MessageText {...messageTextProps} />;
+    }
+    return null;
+  }
+
+  renderMessageImage() {
+    const { containerStyle, wrapperStyle, ...messageImageProps } = this.props;
+    const { currentMessage, renderMessageImage } = messageImageProps;
+
+    if (currentMessage.image) {
+      if (renderMessageImage) {
+        return renderMessageImage(messageImageProps);
+      }
+      return <MessageImage {...messageImageProps} />;
+    }
+    return null;
+  }
+
+  renderTicks() {
+    const { currentMessage, renderTicks, user, tickStyle } = this.props;
+
+    if (renderTicks) {
+      return renderTicks(currentMessage);
+    }
+    if (currentMessage.user._id !== user._id) {
+      return null;
+    }
+    if (currentMessage.sent || currentMessage.received) {
+      return (
+        <View style={styles.tickView}>
+          {currentMessage.sent && <Text style={[styles.tick, tickStyle]}>✓</Text>}
+          {currentMessage.received && <Text style={[styles.tick, tickStyle]}>✓</Text>}
+        </View>
+      );
+    }
+
+    return null;
+  }
+
+  renderTime() {
+    const { containerStyle, wrapperStyle, ...timeProps } = this.props;
+    const { currentMessage, renderTime } = timeProps;
+
+    if (currentMessage.createdAt) {
+      if (renderTime) {
+        return renderTime(timeProps);
+      }
+      return <Time {...timeProps} />;
+    }
+
+    return null;
+  }
+
+  renderCustomView() {
+    const { renderCustomView } = this.props;
+
+    if (renderCustomView) {
+      return renderCustomView(this.props);
+    }
+    return null;
+  }
+
+
+  render() {
+    const {
+      position,
+      containerStyle,
+      wrapperStyle,
+      touchableProps,
+      bottomContainerStyle,
+    } = this.props;
+
+    return (
+      <View style={[styles[position].container, containerStyle[position]]}>
+        <View style={
+        [styles[position].wrapper, wrapperStyle[position],
+          this.handleBubbleToNext(), this.handleBubbleToPrevious()]}
+        >
+          <TouchableWithoutFeedback
+            onLongPress={this.onLongPress}
+            accessibilityTraits="text"
+            {...touchableProps}
+          >
+            <View>
+              {this.renderCustomView()}
+              {this.renderMessageImage()}
+              {this.renderMessageText()}
+              <View style={[styles.bottom, bottomContainerStyle[position]]}>
+                {this.renderTime()}
+                {this.renderTicks()}
+              </View>
+            </View>
+          </TouchableWithoutFeedback>
+        </View>
+      </View>
+    );
+  }
+}
 
 Bubble.contextTypes = {
   actionSheet: PropTypes.func,
@@ -208,7 +249,9 @@ Bubble.defaultProps = {
   renderMessageText: null,
   renderCustomView: null,
   renderTime: null,
+  renderTicks: null,
   position: 'left',
+  user: null,
   currentMessage: {
     text: null,
     createdAt: null,
@@ -222,13 +265,15 @@ Bubble.defaultProps = {
   tickStyle: {},
   containerToNextStyle: {},
   containerToPreviousStyle: {},
-  //TODO: remove in next major release
+  // TODO: remove in next major release
   isSameDay: warnDeprecated(isSameDay),
   isSameUser: warnDeprecated(isSameUser),
 };
 
 Bubble.propTypes = {
+  user: PropTypes.object,
   touchableProps: PropTypes.object,
+  renderTicks: PropTypes.func,
   onLongPress: PropTypes.func,
   renderMessageImage: PropTypes.func,
   renderMessageText: PropTypes.func,
@@ -259,7 +304,7 @@ Bubble.propTypes = {
     left: ViewPropTypes.style,
     right: ViewPropTypes.style,
   }),
-  //TODO: remove in next major release
+  // TODO: remove in next major release
   isSameDay: PropTypes.func,
   isSameUser: PropTypes.func,
 };

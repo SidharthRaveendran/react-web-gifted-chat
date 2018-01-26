@@ -8,5 +8,8 @@
 
   // Any rules here will override those from
   // https://github.com/cooperka/eslint-config-cooperka.
-  "rules": {}
+  "rules": {
+    "no-color-literals": 0,
+    "no-prototype-builtins": 0,
+  }
 }

@@ -6,49 +6,6 @@ import {
 } from 'react-native';
 import PropTypes from 'prop-types';
 
-export default class Composer extends React.Component {
-  onChange(e) {
-    const { contentSize } = e.nativeEvent;
-
-    if (!this.contentSize) {
-      
-      this.contentSize = contentSize;
-      this.props.onInputSizeChanged(this.contentSize);
-
-    } else if (this.contentSize.width !== contentSize.width || this.contentSize.height !== contentSize.height) {
-      
-      this.contentSize = contentSize;
-      this.props.onInputSizeChanged(this.contentSize);
-      
-    }
-  }
-
-  onChangeText(text) {
-    this.props.onTextChanged(text);
-  }
-
-  render() {
-    return (
-      <TextInput
-        placeholder={this.props.placeholder}
-        placeholderTextColor={this.props.placeholderTextColor}
-        multiline={this.props.multiline}
-
-        onContentSizeChange={(e) => this.onChange(e)}
-        onChangeText={text => this.onChangeText(text)}
-
-        style={[styles.textInput, this.props.textInputStyle, {height: this.props.composerHeight}]}
-
-        value={this.props.text}
-        accessibilityLabel={this.props.text || this.props.placeholder}
-        enablesReturnKeyAutomatically={true}
-        underlineColorAndroid="transparent"
-        {...this.props.textInputProps}
-      />
-    );
-  }
-}
-
 const styles = StyleSheet.create({
   textInput: {
     flex: 1,
@@ -65,6 +22,53 @@ const styles = StyleSheet.create({
     }),
   },
 });
+
+export default class Composer extends React.Component {
+  onChange(e) {
+    const { contentSize } = e.nativeEvent;
+    const { onInputSizeChanged } = this.props;
+
+    if (!this.contentSize) {
+      this.contentSize = contentSize;
+      onInputSizeChanged(this.contentSize);
+    } else if (this.contentSize.width !== contentSize.width || this.contentSize.height !== contentSize.height) {
+      this.contentSize = contentSize;
+      onInputSizeChanged(this.contentSize);
+    }
+  }
+
+  render() {
+    const {
+      onTextChanged,
+      placeholder,
+      placeholderTextColor,
+      multiline,
+      textInputStyle,
+      composerHeight,
+      text,
+      textInputProps,
+    } = this.props;
+
+    return (
+      <TextInput
+        placeholder={placeholder}
+        placeholderTextColor={placeholderTextColor}
+        multiline={multiline}
+
+        onContentSizeChange={(e) => this.onChange(e)}
+        onChangeText={(value) => onTextChanged(value)}
+
+        style={[styles.textInput, textInputStyle, { height: composerHeight }]}
+
+        value={text}
+        accessibilityLabel={text || placeholder}
+        enablesReturnKeyAutomatically
+        underlineColorAndroid="transparent"
+        {...textInputProps}
+      />
+    );
+  }
+}
 
 Composer.defaultProps = {
   onChange: () => {
@@ -86,7 +90,7 @@ Composer.defaultProps = {
 };
 
 Composer.propTypes = {
-  onChange: PropTypes.func,
+  // onChange: PropTypes.func,
   composerHeight: PropTypes.number,
   text: PropTypes.string,
   placeholder: PropTypes.string,
