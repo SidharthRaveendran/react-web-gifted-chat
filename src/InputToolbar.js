@@ -10,60 +10,6 @@ import Composer from './Composer';
 import Send from './Send';
 import Actions from './Actions';
 
-export default class InputToolbar extends React.Component {
-  renderActions() {
-    if (this.props.renderActions) {
-      return this.props.renderActions(this.props);
-    } else if (this.props.onPressActionButton) {
-      return <Actions {...this.props} />;
-    }
-    return null;
-  }
-
-  renderSend() {
-    if (this.props.renderSend) {
-      return this.props.renderSend(this.props);
-    }
-    return <Send {...this.props}/>;
-  }
-
-  renderComposer() {
-    if (this.props.renderComposer) {
-      return this.props.renderComposer(this.props);
-    }
-
-    return (
-      <Composer
-        {...this.props}
-      />
-    );
-  }
-
-  renderAccessory() {
-    if (this.props.renderAccessory) {
-      return (
-        <View style={[styles.accessory, this.props.accessoryStyle]}>
-          {this.props.renderAccessory(this.props)}
-        </View>
-      );
-    }
-    return null;
-  }
-
-  render() {
-    return (
-      <View style={[styles.container, this.props.containerStyle]}>
-        <View style={[styles.primary, this.props.primaryStyle]}>
-          {this.renderActions()}
-          {this.renderComposer()}
-          {this.renderSend()}
-        </View>
-        {this.renderAccessory()}
-      </View>
-    );
-  }
-}
-
 const styles = StyleSheet.create({
   container: {
     borderTopWidth: StyleSheet.hairlineWidth,
@@ -79,11 +25,77 @@ const styles = StyleSheet.create({
   },
 });
 
+export default class InputToolbar extends React.Component {
+  renderActions() {
+    const { renderActions, onPressActionButton } = this.props;
+
+    if (renderActions) {
+      return renderActions(this.props);
+    } else if (onPressActionButton) {
+      return <Actions {...this.props} />;
+    }
+    return null;
+  }
+
+  renderSend() {
+    const { renderSend } = this.props;
+
+    if (renderSend) {
+      return renderSend(this.props);
+    }
+    return <Send {...this.props} />;
+  }
+
+  renderComposer() {
+    const { renderComposer } = this.props;
+
+    if (renderComposer) {
+      return renderComposer(this.props);
+    }
+
+    return (
+      <Composer
+        {...this.props}
+      />
+    );
+  }
+
+  renderAccessory() {
+    const { renderAccessory, accessoryStyle } = this.props;
+
+    if (renderAccessory) {
+      return (
+        <View style={[styles.accessory, accessoryStyle]}>
+          {renderAccessory(this.props)}
+        </View>
+      );
+    }
+    return null;
+  }
+
+  render() {
+    const { containerStyle, primaryStyle } = this.props;
+
+    return (
+      <View style={[styles.container, containerStyle]}>
+        <View style={[styles.primary, primaryStyle]}>
+          {this.renderActions()}
+          {this.renderComposer()}
+          {this.renderSend()}
+        </View>
+        {this.renderAccessory()}
+      </View>
+    );
+  }
+}
+
+
 InputToolbar.defaultProps = {
   renderAccessory: null,
   renderActions: null,
   renderSend: null,
   renderComposer: null,
+  onPressActionButton: null,
   containerStyle: {},
   primaryStyle: {},
   accessoryStyle: {},

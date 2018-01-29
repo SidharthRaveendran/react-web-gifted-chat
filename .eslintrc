@@ -9,7 +9,7 @@
   // Any rules here will override those from
   // https://github.com/cooperka/eslint-config-cooperka.
   "rules": {
-    "no-color-literals": 0,
+    "react-native/no-color-literals": 0,
     "no-prototype-builtins": 0,
     "no-underscore-dangle": 0,
   }

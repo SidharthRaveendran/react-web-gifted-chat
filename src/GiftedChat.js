@@ -72,7 +72,7 @@ class GiftedChat extends React.Component {
       messagesContainerHeight: null,
       typingDisabled: false,
       isMounted: false,
-      bottomOffset: 0,
+      bottomOffset: props.bottomOffset || 0,
       maxHeight: null,
       isFirstLayout: true,
       locale: 'en',
@@ -168,28 +168,12 @@ class GiftedChat extends React.Component {
     const newMessagesContainerHeight = this.getMessagesContainerHeight(newComposerHeight);
 
     this.setState({
-      maxHeight: 200,
+      maxHeight: 500,
       isInitialized: true,
       text: '',
       composerHeight: newComposerHeight,
       messagesContainerHeight: this.prepareMessagesContainerHeight(newMessagesContainerHeight),
     });
-  }
-
-  onMainViewLayout(e) {
-    const { layout } = e.nativeEvent;
-    const { isFirstLayout, maxHeight } = this.state;
-
-    if (maxHeight !== layout.height || isFirstLayout === true) {
-      this.setState({
-        maxHeight: layout.height,
-        messagesContainerHeight: this.prepareMessagesContainerHeight(this.getMessagesContainerHeight()),
-      });
-    }
-
-    if (isFirstLayout === true) {
-      this.setState({ isFirstLayout: false });
-    }
   }
 
   /**
@@ -329,7 +313,7 @@ class GiftedChat extends React.Component {
 
     if (isInitialized === true) {
       return (
-        <View style={styles.container} onLayout={this.onMainViewLayout}>
+        <View style={styles.container}>
           {this.renderMessages()}
           {this.renderInputToolbar()}
         </View>
@@ -385,7 +369,7 @@ GiftedChat.propTypes = {
   messages: PropTypes.arrayOf(PropTypes.object),
   onSend: PropTypes.func,
   onInputTextChanged: PropTypes.func,
-  textInputProps: TextInput.propTypes,
+  textInputProps: PropTypes.object,
   // loadEarlier: PropTypes.bool,
   // onLoadEarlier: PropTypes.func,
   locale: PropTypes.string,
@@ -408,7 +392,7 @@ GiftedChat.propTypes = {
   // renderSend: PropTypes.func,
   // renderTime: PropTypes.func,
   user: PropTypes.object,
-  // bottomOffset: PropTypes.number,
+  bottomOffset: PropTypes.number,
   minInputToolbarHeight: PropTypes.number,
   // isLoadingEarlier: PropTypes.bool,
   messageIdGenerator: PropTypes.func,

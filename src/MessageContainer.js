@@ -33,25 +33,6 @@ export default class MessageContainer extends React.Component {
     };
   }
 
-  prepareMessages(messages) {
-    return {
-      keys: messages.map((m) => m._id),
-      blob: messages.reduce((o, m, i) => {
-        const previousMessage = messages[i + 1] || {};
-        const nextMessage = messages[i - 1] || {};
-        // add next and previous messages to hash to ensure updates
-        const toHash = JSON.stringify(m) + previousMessage._id + nextMessage._id;
-        o[m._id] = {
-          ...m,
-          previousMessage,
-          nextMessage,
-          hash: md5(toHash),
-        };
-        return o;
-      }, {}),
-    };
-  }
-
   shouldComponentUpdate(nextProps, nextState) {
     if (!shallowequal(this.props, nextProps)) {
       return true;
@@ -73,6 +54,30 @@ export default class MessageContainer extends React.Component {
     this.setState({
       dataSource: dataSource.cloneWithRows(messagesData.blob, messagesData.keys),
     });
+  }
+
+  prepareMessages(messages) {
+    return {
+      keys: messages.map((m) => m._id),
+      blob: messages.reduce((o, m, i) => {
+        const previousMessage = messages[i + 1] || {};
+        const nextMessage = messages[i - 1] || {};
+        // add next and previous messages to hash to ensure updates
+        const toHash = JSON.stringify(m) + previousMessage._id + nextMessage._id;
+        o[m._id] = {
+          ...m,
+          previousMessage,
+          nextMessage,
+          hash: md5(toHash),
+        };
+        return o;
+      }, {}),
+    };
+  }
+
+  scrollTo(options) {
+    return options;
+    // this._invertibleScrollViewRef.scrollTo(options);
   }
 
   renderFooter() {
@@ -99,11 +104,6 @@ export default class MessageContainer extends React.Component {
       );
     }
     return null;
-  }
-
-  scrollTo(options) {
-    return options;
-    // this._invertibleScrollViewRef.scrollTo(options);
   }
 
   renderRow(message) {
@@ -138,7 +138,7 @@ export default class MessageContainer extends React.Component {
     return (
       <ScrollView
         {...props}
-        {...invertibleScrollViewProps}
+        // {...invertibleScrollViewProps}
       />
     );
   }
