@@ -44,7 +44,7 @@ const styles = {
 
 export default class Time extends React.Component {
   render() {
-    const { position, currentMessage, containerStyle, textStyle } = this.pops;
+    const { position, currentMessage, containerStyle, textStyle } = this.props;
     const locale = window.navigator.userLanguage || window.navigator.language;
 
     return (
