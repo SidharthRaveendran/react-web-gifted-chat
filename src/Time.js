@@ -9,27 +9,13 @@ import PropTypes from 'prop-types';
 
 import moment from 'moment';
 
-export default class Time extends React.Component {
-  render() {
-
-    const locale = window.navigator.userLanguage || window.navigator.language;
-    return (
-      <View style={[styles[this.props.position].container, this.props.containerStyle[this.props.position]]}>
-        <Text style={[styles[this.props.position].text, this.props.textStyle[this.props.position]]}>
-          {moment(this.props.currentMessage.createdAt).locale(locale).format('LT')}
-        </Text>
-      </View>
-    );
-  }
-}
-
-const containerStyle = {
+const containerStyleSelf = {
   marginLeft: 10,
   marginRight: 10,
   marginBottom: 5,
 };
 
-const textStyle = {
+const textStyleSelf = {
   fontSize: 10,
   backgroundColor: 'transparent',
   textAlign: 'right',
@@ -38,23 +24,38 @@ const textStyle = {
 const styles = {
   left: StyleSheet.create({
     container: {
-      ...containerStyle,
+      ...containerStyleSelf,
     },
     text: {
       color: '#aaa',
-      ...textStyle,
+      ...textStyleSelf,
     },
   }),
   right: StyleSheet.create({
     container: {
-      ...containerStyle,
+      ...containerStyleSelf,
     },
     text: {
       color: '#fff',
-      ...textStyle,
+      ...textStyleSelf,
     },
   }),
 };
+
+export default class Time extends React.Component {
+  render() {
+    const { position, currentMessage, containerStyle, textStyle } = this.pops;
+    const locale = window.navigator.userLanguage || window.navigator.language;
+
+    return (
+      <View style={[styles[position].container, containerStyle[position]]}>
+        <Text style={[styles[position].text, textStyle[position]]}>
+          {moment(currentMessage.createdAt).locale(locale).format('LT')}
+        </Text>
+      </View>
+    );
+  }
+}
 
 Time.contextTypes = {
   getLocale: PropTypes.func,

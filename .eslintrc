@@ -11,5 +11,6 @@
   "rules": {
     "no-color-literals": 0,
     "no-prototype-builtins": 0,
+    "no-underscore-dangle": 0,
   }
 }

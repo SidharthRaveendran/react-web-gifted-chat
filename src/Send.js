@@ -6,35 +6,8 @@ import {
   View,
   ViewPropTypes,
 } from 'react-native';
-import PropTypes from 'prop-types';
 
-export default class Send extends React.Component {
-  // shouldComponentUpdate(nextProps, nextState) {
-  //   if (this.props.text.trim().length === 0 && nextProps.text.trim().length > 0 || this.props.text.trim().length > 0 && nextProps.text.trim().length === 0) {
-  //     return true;
-  //   }
-  //   return false;
-  // }
-  render() {
-    if (this.props.text.trim().length > 0) {
-      return (
-        <TouchableOpacity
-          style={[styles.container, this.props.containerStyle]}
-          onPress={() => {
-            this.props.onSend({text: this.props.text.trim()}, true);
-          }}
-          onClick={() => {
-            this.props.onSend({text: this.props.text.trim()}, true);
-          }}
-          accessibilityTraits="button"
-        >
-          <Text style={[styles.text, this.props.textStyle]}>{this.props.label}</Text>
-        </TouchableOpacity>
-      );
-    }
-    return <View/>;
-  }
-}
+import PropTypes from 'prop-types';
 
 const styles = StyleSheet.create({
   container: {
@@ -51,6 +24,38 @@ const styles = StyleSheet.create({
     marginRight: 10,
   },
 });
+
+export default class Send extends React.Component {
+  // shouldComponentUpdate(nextProps, nextState) {
+  //   if (this.props.text.trim().length === 0 && nextProps.text.trim().length > 0
+  // || this.props.text.trim().length > 0 && nextProps.text.trim().length === 0) {
+  //     return true;
+  //   }
+  //   return false;
+  // }
+  render() {
+    const { text, textStyle, label, containerStyle, onSend } = this.props;
+
+    if (this.props.text.trim().length > 0) {
+      return (
+        <TouchableOpacity
+          style={[styles.container, containerStyle]}
+          onPress={() => {
+            onSend({ text: text.trim() }, true);
+          }}
+          onClick={() => {
+            onSend({ text: text.trim() }, true);
+          }}
+          accessibilityTraits="button"
+        >
+          <Text style={[styles.text, textStyle]}>{label}</Text>
+        </TouchableOpacity>
+      );
+    }
+    return <View />;
+  }
+}
+
 
 Send.defaultProps = {
   text: '',

@@ -10,61 +10,7 @@ import Avatar from './Avatar';
 import Bubble from './Bubble';
 import Day from './Day';
 
-import {isSameUser, isSameDay} from './utils';
-
-export default class Message extends React.Component {
-
-  getInnerComponentProps() {
-    const {containerStyle, ...props} = this.props;
-    return {
-      ...props,
-      isSameUser,
-      isSameDay
-    }
-  }
-
-  renderDay() {
-    if (this.props.currentMessage.createdAt) {
-      const dayProps = this.getInnerComponentProps();
-      if (this.props.renderDay) {
-        return this.props.renderDay(dayProps);
-      }
-      return <Day {...dayProps}/>;
-    }
-    return null;
-  }
-
-  renderBubble() {
-    const bubbleProps = this.getInnerComponentProps();
-    if (this.props.renderBubble) {
-      return this.props.renderBubble(bubbleProps);
-    }
-    return <Bubble {...bubbleProps}/>;
-  }
-
-  renderAvatar() {
-    if (this.props.user._id !== this.props.currentMessage.user._id) {
-      const avatarProps = this.getInnerComponentProps();
-      return <Avatar {...avatarProps}/>;
-    }
-    return null;
-  }
-
-  render() {
-    return (
-      <View>
-        {this.renderDay()}
-        <View style={[styles[this.props.position].container, {
-          marginBottom: isSameUser(this.props.currentMessage, this.props.nextMessage) ? 2 : 10,
-        }, this.props.containerStyle[this.props.position]]}>
-          {this.props.position === 'left' ? this.renderAvatar() : null}
-          {this.renderBubble()}
-          {this.props.position === 'right' ? this.renderAvatar() : null}
-        </View>
-      </View>
-    );
-  }
-}
+import { isSameUser, isSameDay } from './utils';
 
 const styles = {
   left: StyleSheet.create({
@@ -86,6 +32,71 @@ const styles = {
     },
   }),
 };
+
+export default class Message extends React.Component {
+
+  getInnerComponentProps() {
+    const { containerStyle, ...props } = this.props;
+    return {
+      ...props,
+      isSameUser,
+      isSameDay,
+    };
+  }
+
+  renderDay() {
+    const { currentMessage, renderDay } = this.props;
+
+    if (currentMessage.createdAt) {
+      const dayProps = this.getInnerComponentProps();
+      if (renderDay) {
+        return renderDay(dayProps);
+      }
+      return <Day {...dayProps} />;
+    }
+    return null;
+  }
+
+  renderBubble() {
+    const { renderBubble } = this.props;
+
+    const bubbleProps = this.getInnerComponentProps();
+    if (renderBubble) {
+      return renderBubble(bubbleProps);
+    }
+    return <Bubble {...bubbleProps} />;
+  }
+
+  renderAvatar() {
+    const { user, currentMessage } = this.props;
+
+    const avatarProps = this.getInnerComponentProps();
+
+    if (user._id !== currentMessage.user._id) {
+      return <Avatar {...avatarProps} />;
+    }
+
+    return null;
+  }
+
+  render() {
+    const { position, currentMessage, nextMessage, containerStyle } = this.props;
+
+    return (
+      <View>
+        {this.renderDay()}
+        <View style={[styles[position].container, {
+          marginBottom: isSameUser(currentMessage, nextMessage) ? 2 : 10,
+        }, containerStyle[this.props.position]]}
+        >
+          {position === 'left' ? this.renderAvatar() : null}
+          {this.renderBubble()}
+          {position === 'right' ? this.renderAvatar() : null}
+        </View>
+      </View>
+    );
+  }
+}
 
 Message.defaultProps = {
   renderAvatar: undefined,

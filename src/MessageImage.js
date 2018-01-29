@@ -4,25 +4,8 @@ import {
   StyleSheet,
   View,
   ViewPropTypes,
-  Dimensions,
 } from 'react-native';
 import PropTypes from 'prop-types';
-
-export default class MessageImage extends React.Component {
-  render() {
-    const {width, height} = Dimensions.get('window');
-
-    return (
-      <View style={[styles.container, this.props.containerStyle]}>
-        <Image
-          {...this.props.imageProps}
-          style={[styles.image, this.props.imageStyle]}
-          source={{uri: this.props.currentMessage.image}}
-        />
-      </View>
-    );
-  }
-}
 
 const styles = StyleSheet.create({
   container: {},
@@ -33,10 +16,23 @@ const styles = StyleSheet.create({
     margin: 3,
     resizeMode: 'cover',
   },
-  imageActive: {
-    resizeMode: 'contain',
-  },
 });
+
+export default class MessageImage extends React.Component {
+  render() {
+    const { imageProps, imageStyle, currentMessage, containerStyle } = this.props;
+
+    return (
+      <View style={[styles.container, containerStyle]}>
+        <Image
+          {...imageProps}
+          style={[styles.image, imageStyle]}
+          source={{ uri: currentMessage.image }}
+        />
+      </View>
+    );
+  }
+}
 
 MessageImage.defaultProps = {
   currentMessage: {
@@ -53,5 +49,4 @@ MessageImage.propTypes = {
   containerStyle: ViewPropTypes.style,
   imageStyle: Image.propTypes.style,
   imageProps: PropTypes.object,
-  lightboxProps: PropTypes.object,
 };

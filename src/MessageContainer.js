@@ -5,8 +5,8 @@ import {
   View,
   ScrollView
 } from 'react-native';
-import PropTypes from 'prop-types';
 
+import PropTypes from 'prop-types';
 import shallowequal from 'shallowequal';
 import md5 from 'md5';
 import LoadEarlier from './LoadEarlier';
@@ -24,18 +24,18 @@ export default class MessageContainer extends React.Component {
     const dataSource = new ListView.DataSource({
       rowHasChanged: (r1, r2) => {
         return r1.hash !== r2.hash;
-      }
+      },
     });
 
     const messagesData = this.prepareMessages(props.messages);
     this.state = {
-      dataSource: dataSource.cloneWithRows(messagesData.blob, messagesData.keys)
+      dataSource: dataSource.cloneWithRows(messagesData.blob, messagesData.keys),
     };
   }
 
   prepareMessages(messages) {
     return {
-      keys: messages.map(m => m._id),
+      keys: messages.map((m) => m._id),
       blob: messages.reduce((o, m, i) => {
         const previousMessage = messages[i + 1] || {};
         const nextMessage = messages[i - 1] || {};
@@ -45,10 +45,10 @@ export default class MessageContainer extends React.Component {
           ...m,
           previousMessage,
           nextMessage,
-          hash: md5(toHash)
+          hash: md5(toHash),
         };
         return o;
-      }, {})
+      }, {}),
     };
   }
 
@@ -63,45 +63,52 @@ export default class MessageContainer extends React.Component {
   }
 
   componentWillReceiveProps(nextProps) {
-    if (this.props.messages === nextProps.messages) {
+    const { messages } = this.props;
+    const { dataSource } = this.state;
+
+    if (messages === nextProps.messages) {
       return;
     }
     const messagesData = this.prepareMessages(nextProps.messages);
     this.setState({
-      dataSource: this.state.dataSource.cloneWithRows(messagesData.blob, messagesData.keys)
+      dataSource: dataSource.cloneWithRows(messagesData.blob, messagesData.keys),
     });
   }
 
   renderFooter() {
-    if (this.props.renderFooter) {
+    const { renderFooter } = this.props;
+
+    if (renderFooter) {
       const footerProps = {
         ...this.props,
       };
-      return this.props.renderFooter(footerProps);
+      return renderFooter(footerProps);
     }
     return null;
   }
 
   renderLoadEarlier() {
-    if (this.props.loadEarlier === true) {
-      const loadEarlierProps = {
-        ...this.props,
-      };
-      if (this.props.renderLoadEarlier) {
-        return this.props.renderLoadEarlier(loadEarlierProps);
+    const { loadEarlier, renderLoadEarlier } = this.props;
+
+    if (loadEarlier) {
+      if (renderLoadEarlier) {
+        return renderLoadEarlier(...this.props);
       }
       return (
-        <LoadEarlier {...loadEarlierProps}/>
+        <LoadEarlier {...this.props} />
       );
     }
     return null;
   }
 
   scrollTo(options) {
+    return options;
     // this._invertibleScrollViewRef.scrollTo(options);
   }
 
-  renderRow(message, sectionId, rowId) {
+  renderRow(message) {
+    const { user, renderMessage } = this.props;
+
     if (!message._id && message._id !== 0) {
       console.warn('GiftedChat: `_id` is missing for message', JSON.stringify(message));
     }
@@ -116,17 +123,18 @@ export default class MessageContainer extends React.Component {
       currentMessage: message,
       previousMessage: message.previousMessage,
       nextMessage: message.nextMessage,
-      position: message.user._id === this.props.user._id ? 'right' : 'left',
+      position: message.user._id === user._id ? 'right' : 'left',
     };
 
-    if (this.props.renderMessage) {
-      return this.props.renderMessage(messageProps);
+    if (renderMessage) {
+      return renderMessage(messageProps);
     }
-    return <Message {...messageProps}/>;
+    return <Message {...messageProps} />;
   }
 
   renderScrollComponent(props) {
-    const invertibleScrollViewProps = this.props.invertibleScrollViewProps;
+    const { invertibleScrollViewProps } = this.props;
+
     return (
       <ScrollView
         {...props}
@@ -137,25 +145,31 @@ export default class MessageContainer extends React.Component {
 
 
   render() {
+    const { listViewProps } = this.props;
+    const { dataSource } = this.state;
+
     return (
-      <View style={{flex: 1}} onLayout={() => {
-        this._scrollView.scrollToEnd()
+      <View
+        style={{ flex: 1 }}
+        onLayout={() => {
+          this._scrollView.scrollToEnd();
+        }
       }
-      }>
+      >
         <ListView
-          enableEmptySections={true}
+          enableEmptySections
           automaticallyAdjustContentInsets={false}
           initialListSize={20}
           pageSize={20}
 
-          ref={component => {
+          ref={(component) => {
             if (component) {
-              this._scrollView = component._scrollViewRef
+              this._scrollView = component._scrollViewRef;
             }
           }}
-          {...this.props.listViewProps}
+          {...listViewProps}
           onContentSizeChange={() => this._scrollView.scrollToEnd()}
-          dataSource={this.state.dataSource}
+          dataSource={dataSource}
           renderScrollComponent={this.renderScrollComponent}
           renderRow={this.renderRow}
           renderHeader={this.renderFooter}
@@ -172,15 +186,19 @@ MessageContainer.defaultProps = {
   renderFooter: null,
   renderMessage: null,
   listViewProps: {},
-  onLoadEarlier: () => {
+  renderLoadEarlier: () => {
   },
+  loadEarlier: false,
+  invertibleScrollViewProps: null,
 };
 
 MessageContainer.propTypes = {
-  messages: PropTypes.array,
+  messages: PropTypes.arrayOf(PropTypes.object),
   user: PropTypes.object,
   renderFooter: PropTypes.func,
   renderMessage: PropTypes.func,
-  onLoadEarlier: PropTypes.func,
+  renderLoadEarlier: PropTypes.func,
   listViewProps: PropTypes.object,
+  loadEarlier: PropTypes.bool,
+  invertibleScrollViewProps: PropTypes.object,
 };
