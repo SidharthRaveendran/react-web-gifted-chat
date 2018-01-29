@@ -164,12 +164,11 @@ class GiftedChat extends React.Component {
   }
 
   onInitialLayoutViewLayout() {
-    this.setMaxHeight(200);
-
     const newComposerHeight = MIN_COMPOSER_HEIGHT;
     const newMessagesContainerHeight = this.getMessagesContainerHeight(newComposerHeight);
 
     this.setState({
+      maxHeight: 200,
       isInitialized: true,
       text: '',
       composerHeight: newComposerHeight,
