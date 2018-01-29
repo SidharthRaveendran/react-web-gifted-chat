@@ -80,7 +80,6 @@ class GiftedChat extends React.Component {
     };
 
     this.onSend = this.onSend.bind(this);
-    this.getLocale = this.getLocale.bind(this);
     this.onInputSizeChanged = this.onInputSizeChanged.bind(this);
     this.onInputTextChanged = this.onInputTextChanged.bind(this);
     this.onMainViewLayout = this.onMainViewLayout.bind(this);
@@ -88,12 +87,6 @@ class GiftedChat extends React.Component {
 
     this.invertibleScrollViewProps = {
       inverted: true,
-    };
-  }
-
-  getChildContext() {
-    return {
-      getLocale: this.getLocale,
     };
   }
 
@@ -352,10 +345,6 @@ class GiftedChat extends React.Component {
   }
 }
 
-GiftedChat.childContextTypes = {
-  getLocale: PropTypes.func,
-};
-
 GiftedChat.defaultProps = {
   messages: [],
   onSend: () => {
@@ -394,10 +383,10 @@ GiftedChat.defaultProps = {
 };
 
 GiftedChat.propTypes = {
-  messages: PropTypes.arrayOf(PropTypes.string),
+  messages: PropTypes.arrayOf(PropTypes.object),
   onSend: PropTypes.func,
   onInputTextChanged: PropTypes.func,
-  textInputProps: TextInput.PropTypes,
+  textInputProps: TextInput.propTypes,
   // loadEarlier: PropTypes.bool,
   // onLoadEarlier: PropTypes.func,
   locale: PropTypes.string,
