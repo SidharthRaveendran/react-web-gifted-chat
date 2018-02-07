@@ -69,10 +69,6 @@ export default class Avatar extends Component {
     const messageToCompare = renderAvatarOnTop ? previousMessage : nextMessage;
     const computedStyle = renderAvatarOnTop ? 'onTop' : 'onBottom';
 
-    if (renderAvatar === null) {
-      return null;
-    }
-
     if (isSameUser(this.props.currentMessage, messageToCompare)
       && isSameDay(this.props.currentMessage, messageToCompare)) {
       return (
@@ -88,7 +84,7 @@ export default class Avatar extends Component {
       <View
         style={[styles[position].container, styles[position][computedStyle], containerStyle[position]]}
       >
-        {this.renderAvatar()}
+        {renderAvatar ? renderAvatar() : this.renderAvatar()}
       </View>
     );
   }
