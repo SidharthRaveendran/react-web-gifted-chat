@@ -60,7 +60,6 @@ export default class Avatar extends Component {
       renderAvatarOnTop,
       previousMessage,
       nextMessage,
-      renderAvatar,
       position,
       containerStyle,
       imageStyle,
@@ -84,7 +83,7 @@ export default class Avatar extends Component {
       <View
         style={[styles[position].container, styles[position][computedStyle], containerStyle[position]]}
       >
-        {renderAvatar ? renderAvatar() : this.renderAvatar()}
+        {this.renderAvatar()}
       </View>
     );
   }

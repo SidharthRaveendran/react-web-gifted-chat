@@ -68,15 +68,9 @@ export default class Message extends React.Component {
   }
 
   renderAvatar() {
-    const { user, currentMessage } = this.props;
-
     const avatarProps = this.getInnerComponentProps();
 
-    if (user._id !== currentMessage.user._id) {
-      return <Avatar {...avatarProps} />;
-    }
-
-    return null;
+    return <Avatar {...avatarProps} />;
   }
 
   render() {
