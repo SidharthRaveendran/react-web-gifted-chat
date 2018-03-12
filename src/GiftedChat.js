@@ -73,7 +73,7 @@ class GiftedChat extends React.Component {
       typingDisabled: false,
       isMounted: false,
       bottomOffset: props.bottomOffset || 0,
-      maxHeight: null,
+      maxHeight: 500,
       isFirstLayout: true,
       locale: 'en',
       messages: [],
@@ -167,7 +167,6 @@ class GiftedChat extends React.Component {
     const newMessagesContainerHeight = this.getMessagesContainerHeight(newComposerHeight);
 
     this.setState({
-      maxHeight: 500,
       isInitialized: true,
       text: '',
       composerHeight: newComposerHeight,
