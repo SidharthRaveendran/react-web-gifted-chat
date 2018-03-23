@@ -109,6 +109,7 @@ e.g.
 - **`renderLoadEarlier`** _(Function)_ - Custom "Load earlier messages" button
 - **`renderAvatar`** _(Function)_ - Custom message avatar; set to `null` to not render any avatar for the message
 - **`renderAllAvatars`** _(Bool)_ - Allways render the avatar of a message. Default is `false`. Only the first message from of a series by the same user has an avatar.
+- **`backgroundImage`** _(String)_ - No background image by default. Display image as background from URL
 - **`onPressAvatar`** _(Function(`user`))_ - Callback when a message avatar is tapped
 - **`renderAvatarOnTop`** _(Bool)_ - Render the message avatar at the top of consecutive messages, rather than the bottom (default)
 - **`renderBubble`** _(Function)_ - Custom message bubble

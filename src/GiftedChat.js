@@ -4,6 +4,7 @@ import {
   StyleSheet,
   View,
   TextInput,
+  ImageBackground,
 } from 'react-native';
 import PropTypes from 'prop-types';
 
@@ -308,13 +309,17 @@ class GiftedChat extends React.Component {
 
   render() {
     const { isInitialized } = this.state;
+    const { backgroundImage } = this.props;
 
     if (isInitialized === true) {
       return (
-        <View style={styles.container}>
+        <ImageBackground
+          source={{ uri: backgroundImage }}
+        >
           {this.renderMessages()}
           {this.renderInputToolbar()}
-        </View>
+        </ImageBackground>
+        
       );
     }
 
@@ -340,6 +345,7 @@ GiftedChat.defaultProps = {
   renderActions: null,
   renderAvatar: undefined,
   renderAllAvatars: false,
+  backgroundImage: null,
   renderBubble: null,
   renderFooter: null,
   renderChatFooter: null,
@@ -377,6 +383,7 @@ GiftedChat.propTypes = {
   // renderActions: PropTypes.func,
   // renderAvatar: PropTypes.func,
   renderAllAvatars: PropTypes.bool,
+  backgroundImage: PropTypes.string,
   // renderBubble: PropTypes.func,
   // renderFooter: PropTypes.func,
   renderChatFooter: PropTypes.func,
