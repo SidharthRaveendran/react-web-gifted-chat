@@ -103,34 +103,6 @@ export default class Bubble extends React.Component {
     }
   }
 
-  handleBubbleToNext() {
-    const {
-      currentMessage,
-      nextMessage,
-      position,
-      containerToNextStyle,
-    } = this.props;
-
-    if (isSameUser(currentMessage, nextMessage) && isSameDay(currentMessage, nextMessage)) {
-      return StyleSheet.flatten([styles[position].containerToNext, containerToNextStyle[position]]);
-    }
-    return null;
-  }
-
-  handleBubbleToPrevious() {
-    const {
-      currentMessage,
-      previousMessage,
-      position,
-      containerToPreviousStyle,
-    } = this.props;
-
-    if (isSameUser(currentMessage, previousMessage) && isSameDay(currentMessage, previousMessage)) {
-      return StyleSheet.flatten([styles[position].containerToPrevious, containerToPreviousStyle[position]]);
-    }
-    return null;
-  }
-
   renderMessageText() {
     const { containerStyle, wrapperStyle, ...messageTextProps } = this.props;
     const { currentMessage, renderMessageText } = messageTextProps;
@@ -214,8 +186,7 @@ export default class Bubble extends React.Component {
     return (
       <View style={[styles[position].container, containerStyle[position]]}>
         <View style={
-        [styles[position].wrapper, wrapperStyle[position],
-          this.handleBubbleToNext(), this.handleBubbleToPrevious()]}
+        [styles[position].wrapper, wrapperStyle[position]]}
         >
           <TouchableWithoutFeedback
             onLongPress={this.onLongPress}
