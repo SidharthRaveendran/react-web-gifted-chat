@@ -59,8 +59,8 @@ export default class Message extends React.Component {
 
   renderBubble() {
     const { renderBubble } = this.props;
-
     const bubbleProps = this.getInnerComponentProps();
+
     if (renderBubble) {
       return renderBubble(bubbleProps);
     }
@@ -75,12 +75,12 @@ export default class Message extends React.Component {
 
   render() {
     const { position, currentMessage, nextMessage, containerStyle } = this.props;
-
+    
     return (
       <View>
         {this.renderDay()}
         <View style={[styles[position].container, {
-          marginBottom: isSameUser(currentMessage, nextMessage) ? 2 : 10,
+          marginTop: isSameUser(currentMessage, nextMessage) ? 2 : 10,
         }, containerStyle[this.props.position]]}
         >
           {position === 'left' ? this.renderAvatar() : null}
