@@ -41,6 +41,7 @@ const styles = StyleSheet.create({
     height: '100%',
   },
   messageFlex: {
+    marginBottom: 10,
     display: 'flex',
   },
 });
@@ -319,7 +320,7 @@ class GiftedChat extends React.Component {
           {this.renderMessages()}
           {this.renderInputToolbar()}
         </ImageBackground>
-        
+
       );
     }
 
