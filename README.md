@@ -1,5 +1,7 @@
 # Gifted Chat
 
+[![Greenkeeper badge](https://badges.greenkeeper.io/QuantumBA/react-web-gifted-chat.svg)](https://greenkeeper.io/)
+
 Web fork of most complete chat UI for React Native (formerly known as Gifted Messenger).
 
 ![](http://i.imgur.com/X7jLrFz.png)
