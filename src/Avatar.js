@@ -46,7 +46,7 @@ export default class Avatar extends Component {
     return (
       <GiftedAvatar
         avatarStyle={
-          StyleSheet.flatten([styles[position].image, imageStyle[position]])
+          currentMessage.user.avatar ? StyleSheet.flatten([styles[position].image, imageStyle[position]]) : { width: 0, height: 0 }
         }
         user={currentMessage.user}
         onPress={() => onPressAvatar && this.props.onPressAvatar(currentMessage.user)}
