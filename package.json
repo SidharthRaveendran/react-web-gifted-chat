@@ -5,24 +5,20 @@
   "main": "index.js",
   "repository": {
     "type": "git",
-    "url": "https://github.com/stermedia/react-web-gifted-chat.git"
+    "url": "https://github.com/SidharthRaveendran/react-web-gifted-chat.git"
   },
-  "keywords": [
-    "react",
-    "react-component",
-    "messenger",
-    "message",
-    "chat"
-  ],
+  "keywords": ["react", "react-component", "messenger", "message", "chat"],
   "author": "Jan Romaniak",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/stermedia/react-web-gifted-chat/issues"
+    "url": "https://github.com/SidharthRaveendran/react-web-gifted-chat/issues"
   },
-  "homepage": "https://github.com/stermedia/react-web-gifted-chat#readme",
+  "homepage":
+    "https://github.com/SidharthRaveendran/react-web-gifted-chat#readme",
   "scripts": {
     "lint": "eslint . --ext .js,.jsx",
-    "compile": "export BABEL_ENV='production' && rm -rf ./dist && mkdir dist && babel index.js src/* -d dist --ignore **/__tests__ && cp package.json dist/ && cp README.md dist/"
+    "compile":
+      "export BABEL_ENV='production' && rm -rf ./dist && mkdir dist && babel index.js src/* -d dist --ignore **/__tests__ && cp package.json dist/ && cp README.md dist/"
   },
   "devDependencies": {
     "babel-cli": "^6.24.1",
@@ -57,8 +53,6 @@
   },
   "peerDependencies": {},
   "babel": {
-    "presets": [
-      "react-app"
-    ]
+    "presets": ["react-app"]
   }
 }
